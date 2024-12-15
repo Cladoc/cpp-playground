@@ -1,0 +1,32 @@
+#!/bin/bash
+
+(return 0 2>/dev/null) && sourced=1 || sourced=0
+if [ "$sourced" == "0" ]; then
+    echo "This script must be sourced"
+    exit 1
+fi
+
+if [ "$VIRTUAL_ENV" != "" ]; then
+    deactivate
+fi
+
+export PROJECT_ROOT="$(/bin/readlink -f $(dirname '${0}'))"
+export PROJECT_VENV="$PROJECT_ROOT/.venv"
+export SCRIPTS_DIR="$PROJECT_ROOT/../scripts"
+
+if ! "$SCRIPTS_DIR/create-venv"; then
+    echo "Failed to create Python virtualenv"
+    rm -rf "$PROJECT_VENV"
+    return 1
+fi
+
+# // for newpath in "$SCRIPTS_DIR"; do
+# //     PATH=$(echo $PATH | sed -re "s#(^|:)$newpath(:|$)#\2#g;s#^:##")
+# //     PATH="$newpath:$PATH"
+# // done
+
+# export PATH
+
+source "$PROJECT_VENV/bin/activate"
+
+export PS1="$PS1[coroutines-env] "

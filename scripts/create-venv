@@ -1,0 +1,26 @@
+#!/usr/bin/bash
+
+if ! command -v virtualenv &> /dev/null; then
+    echo "ERROR: Cannot find virtualenv - please install with pip"
+    exit 1
+fi
+
+if [ ! -f "$PROJECT_VENV/bin/activate" ]; then
+    mkdir -p "$PROJECT_VENV"
+    if ! virtualenv "$PROJECT_VENV"; then
+        echo "ERROR: Failed to create virtualenv"
+        exit 1
+    fi
+fi
+
+if [ ! -f "$PROJECT_VENV/installed-requirements.txt" ] || ! cmp -s "$PROJECT_ROOT/requirements.txt" "$PROJECT_VENV/installed-requirements.txt"; then
+    source "$PROJECT_VENV/bin/activate"
+    if pip3 install -r "$PROJECT_ROOT/requirements.txt"; then
+        cp "$PROJECT_ROOT/requirements.txt" "$PROJECT_VENV/installed-requirements.txt"
+    else
+        echo "ERROR: Failed to install virtualenv requirements"
+        deactivate
+        exit 1
+    fi
+    deactivate
+fi
